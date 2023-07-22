@@ -20,7 +20,6 @@ class ScreenUI:
         self.pregnancy = pregnancy
         self.width = width
         self.height = height
-        print((self.width, self.height))
         self._img = Image.new('L', (self.width, self.height), 255)  # 255: clear the frame
         self._img_draw = ImageDraw.Draw(self._img)
 
