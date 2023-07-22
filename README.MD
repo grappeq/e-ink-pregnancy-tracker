@@ -7,6 +7,10 @@ A simple project that displays the status of a pregnancy using [2.7 inch e-Paper
 ## Setup
 1. Configure your Raspberry Pi according to the [docs provided by Waveshare](https://www.waveshare.com/wiki/2.7inch_e-Paper_HAT_Manual#Working_With_Raspberry_Pi).
 2. Clone this repo.
+3. Install dependencies:
+    ```
+    pip3 install -r requirements.txt
+    ```
 3. Copy the `config.json.example` file as `config.json` and set the expected birth date.
 4. Configure cron to run the `main.py` file on a schedule (e.g. every 30 mins).
 

@@ -3,7 +3,7 @@
 import json
 import time
 import logging
-from lib.waveshare_epd import epd2in7, epdconfig
+import epaper
 from pregnancy_tracker import ScreenUI, Pregnancy
 
 logging.basicConfig(level=logging.DEBUG)
@@ -11,7 +11,7 @@ logging.basicConfig(level=logging.DEBUG)
 config = json.load(open('config.json'))
 
 try:
-    epd = epd2in7.EPD()
+    epd = epaper.epaper('epd2in7').EPD()
 
     logging.info("init and Clear")
     epd.init()
@@ -31,7 +31,3 @@ try:
 except IOError as e:
     logging.info(e)
 
-except KeyboardInterrupt:
-    logging.info("ctrl + c:")
-    epdconfig.module_exit()
-    exit()

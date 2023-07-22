@@ -1,2 +1,3 @@
 Pillow~=10.0.0
 setuptools~=52.0.0
+waveshare-epaper==1.2.0

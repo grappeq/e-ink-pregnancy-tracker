@@ -16,7 +16,7 @@ class Pregnancy:
         return f'{self.get_pregnancy_week()}w {self.get_pregnancy_weekday()}d'
 
     def get_percent_str(self):
-        return f'{round(self.get_progress()*100,1)}%'
+        return "{:.1f}%".format(self.get_progress()*100)
 
     def get_pregnancy_day_f(self):
         return (time.time() - self.pregnancy_start_timestamp)/3600/24
