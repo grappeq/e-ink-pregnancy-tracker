@@ -1,6 +1,0 @@
-from lib.waveshare_epd.epd2in7 import GRAY1, GRAY2, GRAY3, GRAY4
-
-WHITE = GRAY1
-LIGHT_GRAY = GRAY2
-DARK_GRAY = GRAY3
-BLACK = GRAY4

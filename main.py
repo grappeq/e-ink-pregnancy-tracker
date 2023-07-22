@@ -4,8 +4,7 @@ import json
 import time
 import logging
 from lib.waveshare_epd import epd2in7, epdconfig
-from pregnancy import Pregnancy
-from screen_ui import ScreenUI
+from pregnancy_tracker import ScreenUI, Pregnancy
 
 logging.basicConfig(level=logging.DEBUG)
 
