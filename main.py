@@ -7,7 +7,7 @@ import logging
 import epaper
 from pregnancy_tracker import ScreenUI, Pregnancy
 
-logging.basicConfig(level=logging.DEBUG)
+logging.basicConfig(level=logging.WARN)
 
 config_file_path = os.path.join(os.path.dirname(os.path.realpath(__file__)), 'config.json')
 config = json.load(open(config_file_path))
