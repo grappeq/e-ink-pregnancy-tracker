@@ -16,7 +16,7 @@ try:
     epd = epaper.epaper('epd2in7').EPD()
     epd.Init_4Gray()
 
-    pregnancy = Pregnancy(config['expected_birth_timestamp'])
+    pregnancy = Pregnancy(config['expected_birth_date'])
 
     screen_ui = ScreenUI(epd.height, epd.width, pregnancy)
     himage = screen_ui.draw()
