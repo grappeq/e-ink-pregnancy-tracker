@@ -4,6 +4,8 @@ A simple project that displays the status of a pregnancy using [2.7 inch e-Paper
 
 ![Sample screen image](docs/sample-screen.png)
 
+![Completed project photo](docs/completed-project.jpg)
+
 ## Setup
 1. Configure your Raspberry Pi according to the [docs provided by Waveshare](https://www.waveshare.com/wiki/2.7inch_e-Paper_HAT_Manual#Working_With_Raspberry_Pi).
 2. Clone this repo:
@@ -26,3 +28,4 @@ If you wish to try out the package locally, you can run the `local_test.py` file
 
 ## Useful resources
 * [2.7 inch e-Paper HAT docs](https://www.waveshare.com/wiki/2.7inch_e-Paper_HAT)
+* [Model of the case for the display and Raspberry Pi Zero](https://www.printables.com/model/538237-27-inch-e-ink-display-raspberry-pi-zero-case) (visible on the photo above)
