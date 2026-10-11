@@ -16,8 +16,12 @@ except ImportError as e:
     sys.exit(1)
 
 config_file_path = os.path.join(os.path.dirname(os.path.realpath(__file__)), 'config.json')
-config = load_config(config_file_path)
-age, pregnancy = create_models(config)
+try:
+    config = load_config(config_file_path)
+    age, pregnancy = create_models(config)
+except (OSError, ValueError) as e:
+    logging.error('Cannot read %s: %s', config_file_path, e)
+    sys.exit(1)
 
 try:
     epd = epaper.epaper('epd2in7').EPD()
@@ -31,4 +35,4 @@ try:
     epd.sleep()
 
 except IOError as e:
-    logging.info(e)
+    logging.error(e)

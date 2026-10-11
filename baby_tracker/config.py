@@ -33,7 +33,7 @@ def create_models(config, today=None):
             age = Age(due_date, today=today)
         else:
             age = None
-    except ValueError as e:
+    except (ValueError, TypeError) as e:
         raise ConfigError(f'Dates in config.json must be YYYY-MM-DD: {e}') from e
     return age, pregnancy
 

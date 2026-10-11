@@ -106,6 +106,8 @@ class ConfigTest(unittest.TestCase):
     def test_bad_date(self):
         with self.assertRaises(ConfigError):
             create_models({'expected_birth_date': '20.01.2027'}, today=self.TODAY)
+        with self.assertRaises(ConfigError):
+            create_models({'birth_date': 20270120}, today=self.TODAY)
 
     def test_language(self):
         self.assertIs(screen_options({})['locale'], en)
