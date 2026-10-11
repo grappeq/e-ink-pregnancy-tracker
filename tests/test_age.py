@@ -9,7 +9,6 @@ class AgeTest(unittest.TestCase):
     def test_breakdown(self):
         age = Age('2024-01-01', today=date(2026, 10, 11))
         self.assertEqual(age.get_parts(), [(2, 'y'), (9, 'm'), (1, 'w'), (3, 'd')])
-        self.assertEqual(age.get_age_strings(), ['2l', '9m', '1t', '3d'])
 
     def test_born_on_31st_counts_short_months(self):
         # rrule-based counting skipped months without a 31st day.

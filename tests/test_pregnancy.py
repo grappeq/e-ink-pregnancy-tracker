@@ -4,7 +4,7 @@ from datetime import date, timedelta
 from baby_tracker.config import ConfigError, create_models, screen_options
 from baby_tracker.locales import en, pl
 from baby_tracker.pregnancy import Pregnancy
-from baby_tracker.screen_ui import select_state, PREGNANCY, COUNTDOWN, WELCOME, NORMAL
+from baby_tracker.screens import select_state, PREGNANCY, COUNTDOWN, WELCOME, NORMAL
 
 DUE = date(2027, 1, 20)
 START = DUE - timedelta(days=280)
@@ -102,6 +102,11 @@ class ConfigTest(unittest.TestCase):
     def test_missing_dates(self):
         with self.assertRaises(ConfigError):
             create_models({}, today=self.TODAY)
+
+    def test_not_an_object(self):
+        for config in ([], 'x', None):
+            with self.assertRaises(ConfigError):
+                create_models(config, today=self.TODAY)
 
     def test_bad_date(self):
         with self.assertRaises(ConfigError):

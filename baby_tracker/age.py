@@ -69,7 +69,3 @@ class Age:
         last = self._birthday(self._years)
         nxt = self._birthday(self._years + 1)
         return (self.today - last).days / (nxt - last).days
-
-    def get_age_strings(self):
-        short_units = {'y': 'l', 'm': 'm', 'w': 't', 'd': 'd'}
-        return [f'{value}{short_units[unit]}' for value, unit in self.get_parts() if value]

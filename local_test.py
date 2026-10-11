@@ -14,7 +14,7 @@ from datetime import date, datetime
 
 from PIL import Image
 
-from baby_tracker import ScreenUI
+from baby_tracker import create_screen
 from baby_tracker.config import create_models, screen_options
 
 # Approximate on-panel tones for the driver values 0x00, 0x80, 0xC0, 0xFF.
@@ -37,7 +37,7 @@ now = datetime.combine(today, time)
 config = {'expected_birth_date': args.expected_birth_date, 'birth_date': args.born,
           'name': args.name, 'language': args.lang}
 age, pregnancy = create_models(config, today=today)
-image = ScreenUI(264, 176, age, pregnancy, now=now, **screen_options(config)).draw()
+image = create_screen(264, 176, age, pregnancy, now=now, **screen_options(config)).draw()
 
 preview = image.point(lambda v: PANEL_TONES.get(v, v)).resize((264 * 3, 176 * 3), Image.NEAREST)
 if args.out:

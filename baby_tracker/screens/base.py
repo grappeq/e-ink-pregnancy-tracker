@@ -2,10 +2,9 @@ from datetime import datetime
 
 from PIL import Image, ImageDraw
 
-from .fonts import create_font, BLACK_WEIGHT, BOLD_WEIGHT, SEMI_BOLD_WEIGHT
-from .gray_scale import WHITE, LIGHT_GRAY, DARK_GRAY, BLACK, quantize
-from .icons import load_icon, moon_icon_path, carriage_icon_path
-from .locales import get_locale
+from ..fonts import create_font, BLACK_WEIGHT, BOLD_WEIGHT, SEMI_BOLD_WEIGHT
+from ..gray_scale import WHITE, LIGHT_GRAY, DARK_GRAY, BLACK, quantize
+from ..locales import get_locale
 
 # Supersampling keeps curves smooth once quantized down to the panel's 4 gray levels.
 SCALE = 4
@@ -17,27 +16,6 @@ BIRTHDAY = 'birthday'
 PREGNANCY = 'pregnancy'
 
 
-def select_state(age, pregnancy=None):
-    if age is not None and age.is_born():
-        if age.get_total_days() == 0:
-            return WELCOME
-        if age.is_birthday():
-            return BIRTHDAY
-        return NORMAL
-    if pregnancy is not None and pregnancy.get_day() >= 1:
-        return PREGNANCY
-    return COUNTDOWN
-
-
-def hero_parts(parts):
-    """Split age parts into the hero (up to two largest non-zero units) and the remainder."""
-    non_zero = [p for p in parts if p[0]]
-    if not non_zero:
-        # Day of birth; only reachable if a caller skips select_state().
-        return [(0, 'd')], []
-    return non_zero[:2], non_zero[2:]
-
-
 def title_candidates(name, birth_date, born, locale):
     """(text, pt) pairs to try in order; the caller truncates the last one if nothing fits."""
     if name:
@@ -47,7 +25,9 @@ def title_candidates(name, birth_date, born, locale):
     return [(long_form, 17), (long_form, 15), (prefix + locale.format_short_date(birth_date), 15)]
 
 
-class ScreenUI:
+class Screen:
+    """Shared layout and drawing helpers; subclasses draw their content between the title and timestamp."""
+    STATE = None
     MARGIN = 12
     TITLE_BASELINE = 21
     HEART_RADIUS = 5
@@ -62,35 +42,13 @@ class ScreenUI:
     REMAINDER_MIN_GAP = 7
     CONTENT_GAP = 8
     PROGRESS_LABEL_PT = 13
-    PROGRESS_LABEL_BASELINE = 140
-    PROGRESS_BAR = (145, 153)
     STAMP_PT = 12
     STAMP_BASELINE = 170
-    COUNTDOWN_BASELINE = 92
-    COUNTDOWN_RUN_GAP = 6
-    COUNTDOWN_MIN_DIGIT_PT = 36
-    COUNTDOWN_NOTE_BASELINE = 118
-    COUNTDOWN_DATE_BASELINE = 140
-    WELCOME_HEART = (132, 58, 20)
-    # (x offset from centre, radius, fill) of the dots either side of the welcome heart.
-    WELCOME_DOTS = [(38, 3, LIGHT_GRAY), (52, 2, DARK_GRAY)]
-    WELCOME_TEXT_BASELINE = 108
-    WELCOME_NOTE_BASELINE = 136
-    BIRTHDAY_BASELINE = 86
-    BIRTHDAY_MIN_PT = 48
-    BIRTHDAY_HEART_RADIUS = 7
-    BIRTHDAY_HEART_CY = 64
-    BIRTHDAY_HEART_GAP = 18
-    BIRTHDAY_WORD_BASELINE = 104
-    BIRTHDAY_WISH_BASELINE = 136
     WISH_MIN_PT = 16
-    PREGNANCY_LABEL_BASELINE = 123
-    PREGNANCY_BAR = (136, 144)
-    ICON_GAP = 6
 
     def __init__(self, width, height, age=None, pregnancy=None, name=None, now=None, locale=None):
         if age is None and pregnancy is None:
-            raise ValueError('ScreenUI needs an age, a pregnancy or both')
+            raise ValueError('A screen needs an age, a pregnancy or both')
         self.width = width
         self.height = height
         self.age = age
@@ -203,32 +161,6 @@ class ScreenUI:
         self._text((self.width - self.MARGIN, self.STAMP_BASELINE), stamp,
                    self._font(self.STAMP_PT, SEMI_BOLD_WEIGHT), LIGHT_GRAY, anchor='rs')
 
-    # Normal state.
-
-    def _draw_progress(self):
-        """Draws the next-birthday row and returns the top of its label."""
-        left, right = self.MARGIN, self.width - self.MARGIN
-        baseline = self.PROGRESS_LABEL_BASELINE
-        label_font = self._font(self.PROGRESS_LABEL_PT, BLACK_WEIGHT)
-        days_left = self.age.get_days_to_next_birthday()
-        boxes = [
-            self._text((left, baseline), self.locale.next_birthday(self.age.get_next_birthday_number()), label_font,
-                       DARK_GRAY),
-            self._text((right, baseline), self.locale.in_days(days_left), label_font, BLACK, anchor='rs'),
-        ]
-
-        bar_top, bar_bottom = self.PROGRESS_BAR
-        height = bar_bottom - bar_top
-        self._rounded_rect([left, bar_top, right, bar_bottom], height / 2, LIGHT_GRAY)
-        # A fill of 2h reads as a started bar; h alone would look like a stray dot.
-        filled = left + max(2 * height, (right - left) * self.age.get_progress_to_next_birthday())
-        self._rounded_rect([left, bar_top, filled, bar_bottom], height / 2, BLACK)
-        return min(box[1] for box in boxes)
-
-    def _draw_everyday(self):
-        hero, rest = hero_parts(self.age.get_parts())
-        self._draw_hero(hero, rest, self._draw_progress() - self.CONTENT_GAP)
-
     def _draw_hero(self, hero, rest, zone_bottom):
         """Draws one or two big numbers with their units, centred between the title and zone_bottom."""
         zone_top = self._title_bottom + self.CONTENT_GAP
@@ -263,101 +195,8 @@ class ScreenUI:
                              (quantities, remainder_font, BLACK)],
                             self.width / 2, top + remainder_offset)
 
-    # Pregnancy state (birth date still ahead, within the 40 weeks).
-
-    def _draw_pregnancy_progress(self):
-        """Draws the moon-to-carriage bar with its labels and returns the top of the labels."""
-        left, right = self.MARGIN, self.width - self.MARGIN
-        bar_top, bar_bottom = self.PREGNANCY_BAR
-        bar_mid = (bar_top + bar_bottom) / 2
-        moon, carriage = load_icon(moon_icon_path), load_icon(carriage_icon_path)
-        self._icon(moon, left + moon.width / 2, bar_mid)
-        self._icon(carriage, right - carriage.width / 2, bar_mid)
-        bar_left, bar_right = left + moon.width + self.ICON_GAP, right - carriage.width - self.ICON_GAP
-
-        height = bar_bottom - bar_top
-        self._rounded_rect([bar_left, bar_top, bar_right, bar_bottom], height / 2, LIGHT_GRAY)
-        filled = bar_left + max(2 * height, (bar_right - bar_left) * self.pregnancy.get_progress())
-        self._rounded_rect([bar_left, bar_top, filled, bar_bottom], height / 2, BLACK)
-
-        days = self.pregnancy.get_days_until_due()
-        if days > 0:
-            remaining = self.locale.in_days(days)
-        elif days == 0:
-            remaining = self.locale.DUE_TODAY
-        else:
-            remaining = self.locale.overdue(-days)
-        baseline = self.PREGNANCY_LABEL_BASELINE
-        label_font = self._font(self.PROGRESS_LABEL_PT, BLACK_WEIGHT)
-        boxes = [
-            self._text((left, baseline), self.locale.format_percent(self.pregnancy.get_progress()), label_font, BLACK),
-            self._text((right, baseline), remaining, label_font, DARK_GRAY, anchor='rs'),
-        ]
-        return min(box[1] for box in boxes)
-
-    def _draw_pregnancy(self):
-        # get_day() >= 1 in this state, so at least one part is non-zero.
-        hero = [p for p in self.pregnancy.get_parts() if p[0]]
-        self._draw_hero(hero, [], self._draw_pregnancy_progress() - self.CONTENT_GAP)
-
-    # Countdown state (birth date still ahead).
-
-    def _draw_countdown(self):
-        days = self._days_until_birth()
-        max_width = self.width - 2 * self.MARGIN
-        for pt in range(self.HERO_DIGIT_PT, self.COUNTDOWN_MIN_DIGIT_PT - 1, -4):
-            runs = [(self.locale.COUNTDOWN_PREFIX, self._font(20, BLACK_WEIGHT), DARK_GRAY),
-                    (str(days), self._font(pt, BLACK_WEIGHT), BLACK),
-                    (self.locale.unit_word(days, 'd'), self._font(22, BLACK_WEIGHT), DARK_GRAY)]
-            runs = [run for run in runs if run[0]]
-            width = sum(self._text_size(t, f)[0] for t, f, _ in runs) + (len(runs) - 1) * self.COUNTDOWN_RUN_GAP
-            if width <= max_width:
-                break
-        # Without a name the date is already the title, so drop its line and re-centre the rest.
-        shift = 0 if self.name else (self.COUNTDOWN_DATE_BASELINE - self.COUNTDOWN_NOTE_BASELINE) / 2
-        self._text_runs(runs, self.width / 2, self.COUNTDOWN_BASELINE + shift, gap=self.COUNTDOWN_RUN_GAP)
-        self._text((self.width / 2, self.COUNTDOWN_NOTE_BASELINE + shift), self.locale.COUNTDOWN_NOTE,
-                   self._font(15, BOLD_WEIGHT), DARK_GRAY, anchor='ms')
-        if self.name:
-            self._text((self.width / 2, self.COUNTDOWN_DATE_BASELINE), self.locale.format_date(self._birth_date()),
-                       self._font(14, BOLD_WEIGHT), BLACK, anchor='ms')
-
-    # Special days.
-
-    def _draw_welcome(self):
-        cx, cy, r = self.WELCOME_HEART
-        self._draw_heart(cx, cy, r, BLACK)
-        for offset, radius, fill in self.WELCOME_DOTS:
-            for x in (cx - offset, cx + offset):
-                self._ellipse([x - radius, cy - radius, x + radius, cy + radius], fill)
-        greeting = self.locale.WELCOME
-        font = self._fit_font(greeting, self.width - 2 * self.MARGIN - 12, range(22, self.WISH_MIN_PT - 1, -2))
-        self._text((self.width / 2, self.WELCOME_TEXT_BASELINE), greeting, font, BLACK, anchor='ms')
-        # Without a name the date is already the title.
-        note = self.locale.format_date(self.age.birth_date) if self.name else self.locale.FIRST_DAY
-        self._text((self.width / 2, self.WELCOME_NOTE_BASELINE), note, self._font(15, BOLD_WEIGHT), DARK_GRAY,
-                   anchor='ms')
-
-    def _draw_birthday(self):
-        ordinal = self.locale.birthday_ordinal(self.age.get_years())
-        heart_room = 2 * (self.BIRTHDAY_HEART_GAP + 2 * self.BIRTHDAY_HEART_RADIUS)
-        max_width = self.width - 2 * self.MARGIN - 12
-        for pt in range(self.HERO_DIGIT_PT, self.BIRTHDAY_MIN_PT - 1, -4):
-            font = self._font(pt, BLACK_WEIGHT)
-            width, _ = self._text_size(ordinal, font)
-            if width + heart_room <= max_width:
-                break
-        cx = self.width / 2
-        self._text((cx, self.BIRTHDAY_BASELINE), ordinal, font, BLACK, anchor='ms')
-        if width + heart_room <= max_width:
-            offset = width / 2 + self.BIRTHDAY_HEART_GAP
-            for x in (cx - offset, cx + offset):
-                self._draw_heart(x, self.BIRTHDAY_HEART_CY, self.BIRTHDAY_HEART_RADIUS, BLACK)
-        self._text((cx, self.BIRTHDAY_WORD_BASELINE), self.locale.BIRTHDAY_WORD,
-                   self._font(self.HERO_UNIT_PT, BLACK_WEIGHT), DARK_GRAY, anchor='ms')
-        wish = self.locale.BIRTHDAY_WISH
-        wish_font = self._fit_font(wish, self.width - 2 * self.MARGIN, range(22, self.WISH_MIN_PT - 1, -2))
-        self._text((cx, self.BIRTHDAY_WISH_BASELINE), wish, wish_font, BLACK, anchor='ms')
+    def _draw_content(self):
+        raise NotImplementedError
 
     def draw(self):
         self._img = Image.new('L', (self.width * SCALE, self.height * SCALE), WHITE)
@@ -366,13 +205,7 @@ class ScreenUI:
         self.drawn = []
         self._icons = []
         self._title_bottom = self._draw_title()
-        {
-            NORMAL: self._draw_everyday,
-            COUNTDOWN: self._draw_countdown,
-            WELCOME: self._draw_welcome,
-            BIRTHDAY: self._draw_birthday,
-            PREGNANCY: self._draw_pregnancy,
-        }[select_state(self.age, self.pregnancy)]()
+        self._draw_content()
         self._draw_timestamp()
         img = quantize(self._img.resize((self.width, self.height), Image.LANCZOS))
         for mask, xy in self._icons:
