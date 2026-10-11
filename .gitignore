@@ -2,3 +2,6 @@
 *.iml
 
 config.json
+__pycache__/
+preview.png
+baby-tracker.log*
