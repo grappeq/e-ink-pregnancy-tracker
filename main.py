@@ -1,24 +1,29 @@
 #!/usr/bin/python
 # -*- coding:utf-8 -*-
-import json
 import os
+import sys
 import time
 import logging
-import epaper
-from baby_tracker import ScreenUI, Age
 
 logging.basicConfig(level=logging.WARN)
 
+try:
+    import epaper
+    from baby_tracker import ScreenUI
+    from baby_tracker.config import load_config, create_models, screen_options
+except ImportError as e:
+    logging.error('%s. After updating, reinstall the dependencies: pip3 install -r requirements.txt', e)
+    sys.exit(1)
+
 config_file_path = os.path.join(os.path.dirname(os.path.realpath(__file__)), 'config.json')
-config = json.load(open(config_file_path))
+config = load_config(config_file_path)
+age, pregnancy = create_models(config)
 
 try:
     epd = epaper.epaper('epd2in7').EPD()
     epd.Init_4Gray()
 
-    age = Age(config['birth_date'])
-
-    screen_ui = ScreenUI(epd.height, epd.width, age, name=config.get('name'))
+    screen_ui = ScreenUI(epd.height, epd.width, age, pregnancy, **screen_options(config))
     himage = screen_ui.draw()
     epd.display_4Gray(epd.getbuffer_4Gray(himage))
     time.sleep(2)
@@ -27,4 +32,3 @@ try:
 
 except IOError as e:
     logging.info(e)
-

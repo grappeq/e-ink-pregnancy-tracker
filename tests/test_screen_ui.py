@@ -6,6 +6,7 @@ from datetime import date, datetime, timedelta
 from baby_tracker.age import Age
 from baby_tracker.fonts import BLACK_WEIGHT
 from baby_tracker.gray_scale import BLACK, DARK_GRAY, LIGHT_GRAY
+from baby_tracker.locales import pl
 from baby_tracker.screen_ui import (
     ScreenUI, select_state, hero_parts, title_candidates, NORMAL, COUNTDOWN, WELCOME, BIRTHDAY,
 )
@@ -33,7 +34,7 @@ def iso(d):
 
 
 def render(birth_date, name='Zosia', today=TODAY, now=NOW):
-    ui = ScreenUI(WIDTH, HEIGHT, Age(birth_date, today=today), name=name, now=now)
+    ui = ScreenUI(WIDTH, HEIGHT, Age(birth_date, today=today), name=name, now=now, locale=pl)
     return ui, ui.draw()
 
 
@@ -131,14 +132,14 @@ class TitleCandidatesTest(unittest.TestCase):
     BIRTH = date(2026, 4, 30)
 
     def test_name(self):
-        self.assertEqual(title_candidates('Zosia', self.BIRTH, True), [('Zosia', 17), ('Zosia', 15)])
+        self.assertEqual(title_candidates('Zosia', self.BIRTH, True, pl), [('Zosia', 17), ('Zosia', 15)])
 
     def test_no_name_born(self):
-        self.assertEqual(title_candidates(None, self.BIRTH, True), [
+        self.assertEqual(title_candidates(None, self.BIRTH, True, pl), [
             ('ur. 30 kwietnia 2026', 17), ('ur. 30 kwietnia 2026', 15), ('ur. 30.04.2026', 15)])
 
     def test_no_name_future(self):
-        self.assertEqual(title_candidates(None, self.BIRTH, False), [
+        self.assertEqual(title_candidates(None, self.BIRTH, False, pl), [
             ('30 kwietnia 2026', 17), ('30 kwietnia 2026', 15), ('30.04.2026', 15)])
 
 
@@ -566,12 +567,12 @@ class ReviewFixesTest(unittest.TestCase):
         self.assertLessEqual(len(title), ScreenUI.NAME_MAX_LENGTH + 1)
 
     def test_draw_twice_records_once(self):
-        ui = ScreenUI(WIDTH, HEIGHT, Age('2024-01-01', today=TODAY), name='Zosia', now=NOW)
+        ui = ScreenUI(WIDTH, HEIGHT, Age('2024-01-01', today=TODAY), name='Zosia', now=NOW, locale=pl)
         first = ui.draw()
         count = len(ui.drawn)
         second = ui.draw()
         self.assertEqual(len(ui.drawn), count)
-        self.assertEqual(list(first.getdata()), list(second.getdata()))
+        self.assertEqual(first.tobytes(), second.tobytes())
 
     def test_countdown_without_date_line_is_recentred(self):
         named, _ = render('2026-10-25')

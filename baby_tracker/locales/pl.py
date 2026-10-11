@@ -10,6 +10,16 @@ MONTHS_GENITIVE = [
     'lipca', 'sierpnia', 'września', 'października', 'listopada', 'grudnia',
 ]
 
+BORN_PREFIX = 'ur. '
+REMAINDER_PREFIX = 'oraz '
+COUNTDOWN_PREFIX = 'za'
+COUNTDOWN_NOTE = 'do narodzin'
+WELCOME = 'Witaj na świecie!'
+FIRST_DAY = 'pierwszy dzień'
+BIRTHDAY_WORD = 'urodziny'
+BIRTHDAY_WISH = 'Sto lat!'
+DUE_TODAY = 'termin dziś'
+
 
 def plural(n, forms):
     one, few, many = forms
@@ -38,5 +48,29 @@ def format_date(d):
     return f'{d.day} {MONTHS_GENITIVE[d.month - 1]} {d.year}'
 
 
-def format_numeric_date(d):
+def format_short_date(d):
     return f'{d.day:02d}.{d.month:02d}.{d.year}'
+
+
+def format_timestamp(dt):
+    return dt.strftime('%d.%m, %H:%M')
+
+
+def format_percent(fraction):
+    return f'{fraction * 100:.1f}%'.replace('.', ',')
+
+
+def birthday_ordinal(n):
+    return f'{n}.'
+
+
+def next_birthday(n):
+    return f'{birthday_ordinal(n)} {BIRTHDAY_WORD}'
+
+
+def in_days(n):
+    return f'za {format_quantity(n, "d")}'
+
+
+def overdue(n):
+    return f'{format_quantity(n, "d")} po terminie'

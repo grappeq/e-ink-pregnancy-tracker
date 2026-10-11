@@ -1,32 +1,37 @@
-import math
-import time
-from datetime import datetime, timedelta
+from datetime import date, datetime, timedelta
+
 
 class Pregnancy:
-    PREGNANCY_DURATION_DAYS = 280
+    DURATION_DAYS = 280
+    # Past this many days after the due date the baby has certainly been born:
+    # a config that was never updated is treated as if the due date was the birth date.
+    MAX_OVERDUE_DAYS = 21
 
-    def __init__(self, birth_date):
-        self.birth_date = datetime.strptime(birth_date, "%Y-%m-%d")
-        self.pregnancy_start_date = self.birth_date - timedelta(days=self.PREGNANCY_DURATION_DAYS)
+    def __init__(self, due_date, today=None):
+        self.due_date = datetime.strptime(due_date, "%Y-%m-%d").date()
+        self.start_date = self.due_date - timedelta(days=self.DURATION_DAYS)
+        self.today = today or date.today()
+
+    def get_day(self):
+        """Days since the start of the pregnancy (the due date is day 280)."""
+        return (self.today - self.start_date).days
+
+    def get_weeks(self):
+        return self.get_day() // 7
+
+    def get_weekdays(self):
+        return self.get_day() % 7
+
+    def get_parts(self):
+        """(value, unit) pairs like Age.get_parts(): completed weeks and days."""
+        return [(self.get_weeks(), 'w'), (self.get_weekdays(), 'd')]
 
     def get_progress(self):
-        total_pregnancy_secs = self.birth_date.timestamp() - self.pregnancy_start_date.timestamp()
-        return min(self.get_pregnancy_secs()/total_pregnancy_secs, 1)
+        return min(max(self.get_day() / self.DURATION_DAYS, 0), 1)
 
-    def get_weekday_str(self):
-        return f'{self.get_pregnancy_week()}w {self.get_pregnancy_weekday()}d'
+    def get_days_until_due(self):
+        """Negative once the due date has passed."""
+        return (self.due_date - self.today).days
 
-    def get_percent_str(self):
-        return "{:.1f}%".format(self.get_progress()*100)
-
-    def get_pregnancy_day(self):
-        return (datetime.now() - self.pregnancy_start_date).days
-
-    def get_pregnancy_secs(self):
-        return time.time() - self.pregnancy_start_date.timestamp()
-
-    def get_pregnancy_week(self):
-        return math.floor(self.get_pregnancy_day()/7)
-
-    def get_pregnancy_weekday(self):
-        return math.floor(self.get_pregnancy_day())%7
+    def is_long_overdue(self):
+        return -self.get_days_until_due() > self.MAX_OVERDUE_DAYS

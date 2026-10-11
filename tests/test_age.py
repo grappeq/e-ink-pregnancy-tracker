@@ -2,7 +2,7 @@ import unittest
 from datetime import date
 
 from baby_tracker.age import Age
-from baby_tracker.polish import format_quantity, join_words, format_date, format_numeric_date
+from baby_tracker.locales.pl import format_quantity, join_words, format_date, format_short_date as format_numeric_date
 
 
 class AgeTest(unittest.TestCase):
