@@ -59,7 +59,7 @@ The screen is in English by default and can be switched to Polish:
 * `name` – optional, shown as the title. Without it the title is the birth date.
 * `language` – `en` (default) or `pl`.
 
-Either date on its own is enough: a config with only `birth_date` (as used by [e-ink-baby-age-tracker](https://github.com/grappeq/e-ink-baby-age-tracker)) shows the pregnancy before that date.
+Either date on its own is enough: a config with only `birth_date` shows the pregnancy before that date.
 
 ## Upgrading
 This project used to be *e-ink-pregnancy-tracker*. Existing clones keep working (GitHub redirects the old URL) and existing `config.json` files stay valid. After pulling, reinstall the dependencies, because a new one was added:
