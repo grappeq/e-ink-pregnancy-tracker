@@ -1,5 +1,0 @@
-
-WHITE = 0xff
-LIGHT_GRAY = 0xC0
-DARK_GRAY = 0x80
-BLACK = 0x00

@@ -5,7 +5,7 @@ import os
 import time
 import logging
 import epaper
-from pregnancy_tracker import ScreenUI, Pregnancy
+from baby_tracker import ScreenUI, Age
 
 logging.basicConfig(level=logging.WARN)
 
@@ -16,9 +16,9 @@ try:
     epd = epaper.epaper('epd2in7').EPD()
     epd.Init_4Gray()
 
-    pregnancy = Pregnancy(config['expected_birth_date'])
+    age = Age(config['birth_date'])
 
-    screen_ui = ScreenUI(epd.height, epd.width, pregnancy)
+    screen_ui = ScreenUI(epd.height, epd.width, age, name=config.get('name'))
     himage = screen_ui.draw()
     epd.display_4Gray(epd.getbuffer_4Gray(himage))
     time.sleep(2)
