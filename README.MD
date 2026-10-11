@@ -79,7 +79,7 @@ python3 local_test.py 2024-01-01 2026-10-11 --born 2024-01-01 --out preview.png
 Run the tests with `python3 -m unittest`.
 
 ## Credits
-The age screens come from [e-ink-baby-age-tracker](https://github.com/grappeq/e-ink-baby-age-tracker), which has been merged into this project. The Nunito font is licensed under the [SIL Open Font License](res/fonts/OFL-Nunito.txt).
+The Nunito font is licensed under the [SIL Open Font License](res/fonts/OFL-Nunito.txt).
 
 ## Useful resources
 * [2.7 inch e-Paper HAT docs](https://www.waveshare.com/wiki/2.7inch_e-Paper_HAT)
